@@ -4,6 +4,8 @@ import { storage } from '../services/api';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
   const navigate = useNavigate();
 
   // Sample data for the table
@@ -15,7 +17,8 @@ const Dashboard = () => {
       department: 'Engineering',
       position: 'Software Developer',
       joinDate: '2023-01-15',
-      status: 'Active'
+      status: 'Active',
+      avatar: 'JD'
     },
     {
       id: 2,
@@ -24,7 +27,8 @@ const Dashboard = () => {
       department: 'Marketing',
       position: 'Marketing Manager',
       joinDate: '2023-03-22',
-      status: 'Active'
+      status: 'Active',
+      avatar: 'JS'
     },
     {
       id: 3,
@@ -33,7 +37,8 @@ const Dashboard = () => {
       department: 'Sales',
       position: 'Sales Representative',
       joinDate: '2023-02-10',
-      status: 'Inactive'
+      status: 'Inactive',
+      avatar: 'MJ'
     },
     {
       id: 4,
@@ -42,7 +47,8 @@ const Dashboard = () => {
       department: 'HR',
       position: 'HR Specialist',
       joinDate: '2023-04-05',
-      status: 'Active'
+      status: 'Active',
+      avatar: 'SW'
     },
     {
       id: 5,
@@ -51,9 +57,12 @@ const Dashboard = () => {
       department: 'Finance',
       position: 'Financial Analyst',
       joinDate: '2023-05-12',
-      status: 'Pending'
+      status: 'Pending',
+      avatar: 'DB'
     }
   ]);
+
+  
 
   useEffect(() => {
     const authData = storage.getAuthData();
@@ -76,14 +85,8 @@ const Dashboard = () => {
   };
 
   const getStatusBadge = (status) => {
-    const statusClass = {
-      'Active': 'status-active',
-      'Inactive': 'status-inactive',
-      'Pending': 'status-pending'
-    };
-    
     return (
-      <span className={`status-badge ${statusClass[status] || 'status-pending'}`}>
+      <span className={`status-badge status-${status.toLowerCase()}`}>
         {status}
       </span>
     );
@@ -97,74 +100,158 @@ const Dashboard = () => {
       .toUpperCase();
   };
 
+  // Filter employees based on search and status
+  const filteredData = tableData.filter(employee => {
+    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         employee.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'All' || employee.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="app-container">
-      <div className="dashboard-container">
+    <div className="dashboard-wrapper">
+
+      {/* Main Content */}
+      <div className="main-content">
+        {/* Header */}
         <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          <div className="user-info">
-            <div className="user-avatar">
-              {getInitials(user.name)}
+          <div className="header-left">
+            <h1>Dashboard</h1>
+            <p className="header-subtitle">Welcome back, {user.name}!</p>
+          </div>
+          <div className="header-right">
+            <div className="user-profile">
+              <div className="user-avatar">
+                {getInitials(user.name)}
+              </div>
+              <div className="user-info">
+                <h4>{user.name}</h4>
+                <p>{user.email}</p>
+              </div>
+              <button onClick={handleLogout} className="btn-logout">
+                 Logout
+              </button>
             </div>
-            <div className="user-details">
-              <h3>{user.name}</h3>
-              <p>{user.email}</p>
-            </div>
-            <button onClick={handleLogout} className="btn-logout">
-              Logout
-            </button>
           </div>
         </div>
 
-        <div className="dashboard-content">
-          <h2 style={{ marginBottom: '20px', color: '#333' }}>Employee Management</h2>
-          
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Department</th>
-                <th>Position</th>
-                <th>Join Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map((employee) => (
-                <tr key={employee.id}>
-                  <td>{employee.id}</td>
-                  <td>{employee.name}</td>
-                  <td>{employee.email}</td>
-                  <td>{employee.department}</td>
-                  <td>{employee.position}</td>
-                  <td>{formatDate(employee.joinDate)}</td>
-                  <td>{getStatusBadge(employee.status)}</td>
+       
+
+        {/* Employee Management Section */}
+        <div className="content-card">
+         
+
+          {/* Search and Filter */}
+          <div className="table-controls">
+            <div className="search-box">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search employees..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="filter-box">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="All">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Employee Table */}
+          <div className="table-container">
+            <table className="modern-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Position</th>
+                  <th>Join Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredData.map((employee) => (
+                 <tr key={employee.id}>
+                   <td data-label="Employee">
+                     <div className="employee-info">
+                       <div className="employee-avatar">
+                         {employee.avatar}
+                       </div>
+                       <div>
+                         <div className="employee-name">{employee.name}</div>
+                         <div className="employee-email">{employee.email}</div>
+                       </div>
+                     </div>
+                   </td>
+                 
+                   <td data-label="Department">
+                     <span className="department-badge">{employee.department}</span>
+                   </td>
+                 
+                   <td data-label="Position">
+                     {employee.position}
+                   </td>
+                 
+                   <td data-label="Join Date">
+                     {formatDate(employee.joinDate)}
+                   </td>
+                 
+                   <td data-label="Status">
+                     {getStatusBadge(employee.status)}
+                   </td>
+                 
+                   <td data-label="Actions">
+                     <div className="action-buttons">
+                       <button className="btn-action btn-edit" title="Edit">✏️</button>
+                       <button className="btn-action btn-view" title="View">👁️</button>
+                       <button className="btn-action btn-delete" title="Delete">🗑️</button>
+                     </div>
+                   </td>
+                 </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '10px' }}>
-          <h3 style={{ marginBottom: '15px', color: '#333' }}>User Information</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
-            <div>
-              <strong>Name:</strong> {user.name}
+        {/* User Profile Card */}
+        <div className="profile-card">
+          <h3>Your Profile</h3>
+          <div className="profile-grid">
+            <div className="profile-item">
+              <span className="profile-label">Name:</span>
+              <span className="profile-value">{user.name}</span>
             </div>
-            <div>
-              <strong>Email:</strong> {user.email}
+            <div className="profile-item">
+              <span className="profile-label">Email:</span>
+              <span className="profile-value">{user.email}</span>
             </div>
-            <div>
-              <strong>Date of Birth:</strong> {formatDate(user.dateOfBirth)}
+            <div className="profile-item">
+              <span className="profile-label">Date of Birth:</span>
+              <span className="profile-value">{formatDate(user.dateOfBirth)}</span>
             </div>
-            <div>
-              <strong>User ID:</strong> {user.id}
+            <div className="profile-item">
+              <span className="profile-label">User ID:</span>
+              <span className="profile-value">{user.id}</span>
             </div>
           </div>
         </div>
