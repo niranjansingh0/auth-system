@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -7,7 +7,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { storage } from './services/api';
 
 function App() {
-  const isAuthenticated = storage.isAuthenticated();
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(storage.isAuthenticated());
+
+  useEffect(() => {
+    // Check auth state on every route change
+    setIsAuthenticated(storage.isAuthenticated());
+  }, [location]);
 
   return (
     <div className="App">
