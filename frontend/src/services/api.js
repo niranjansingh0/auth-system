@@ -3,8 +3,6 @@ import axios from 'axios';
 // api.js
 const API_URL = process.env.REACT_APP_API_URL;
 
-
-
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
