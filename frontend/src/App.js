@@ -10,63 +10,51 @@ function App() {
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(storage.isAuthenticated());
 
+  // Sync auth state on route change
   useEffect(() => {
-    const updateAuth = () => {
-      setIsAuthenticated(storage.isAuthenticated());
-    };
-
-    updateAuth();
-
-    // Watch for localStorage changes (logout from other tabs)
-    window.addEventListener('storage', updateAuth);
-
-    return () => {
-      window.removeEventListener('storage', updateAuth);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Recheck auth on every route change
     setIsAuthenticated(storage.isAuthenticated());
   }, [location]);
 
+  // Listen for logout/login events from other tabs
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(storage.isAuthenticated());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   return (
-    <div className="App">
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            isAuthenticated ? 
-              <Navigate to="/dashboard" replace /> : 
-              <Navigate to="/login" replace />
-          } 
-        />
-        <Route 
-          path="/login" 
-          element={
-            isAuthenticated ? 
-              <Navigate to="/dashboard" replace /> : 
-              <Login />
-          } 
-        />
-        <Route 
-          path="/register" 
-          element={
-            isAuthenticated ? 
-              <Navigate to="/dashboard" replace /> : 
-              <Register />
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
-    </div>
+    <Routes>
+      <Route 
+        path="/" 
+        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+      />
+      <Route 
+        path="/login" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
+      />
+      <Route 
+        path="/register" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+      />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
+    </Routes>
   );
 }
 
