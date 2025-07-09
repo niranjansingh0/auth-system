@@ -73,7 +73,7 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     storage.clearAuthData();
-    navigate('/login');
+    window.location.href = '/login'; 
   };
 
   const formatDate = (dateString) => {

@@ -11,7 +11,22 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(storage.isAuthenticated());
 
   useEffect(() => {
-    // Check auth state on every route change
+    const updateAuth = () => {
+      setIsAuthenticated(storage.isAuthenticated());
+    };
+
+    updateAuth();
+
+    // Watch for localStorage changes (logout from other tabs)
+    window.addEventListener('storage', updateAuth);
+
+    return () => {
+      window.removeEventListener('storage', updateAuth);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Recheck auth on every route change
     setIsAuthenticated(storage.isAuthenticated());
   }, [location]);
 
@@ -22,24 +37,24 @@ function App() {
           path="/" 
           element={
             isAuthenticated ? 
-            <Navigate to="/dashboard" replace /> : 
-            <Navigate to="/login" replace />
+              <Navigate to="/dashboard" replace /> : 
+              <Navigate to="/login" replace />
           } 
         />
         <Route 
           path="/login" 
           element={
             isAuthenticated ? 
-            <Navigate to="/dashboard" replace /> : 
-            <Login />
+              <Navigate to="/dashboard" replace /> : 
+              <Login />
           } 
         />
         <Route 
           path="/register" 
           element={
             isAuthenticated ? 
-            <Navigate to="/dashboard" replace /> : 
-            <Register />
+              <Navigate to="/dashboard" replace /> : 
+              <Register />
           } 
         />
         <Route 
