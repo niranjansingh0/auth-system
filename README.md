@@ -232,9 +232,6 @@ REACT_APP_API_URL=http://localhost:5000/api
    ```
 5. Open a Pull Request
 
----
 
-
----
 
 > Developed with ❤️ by **Niranjan**
